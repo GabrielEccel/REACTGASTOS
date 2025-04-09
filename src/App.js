@@ -53,21 +53,28 @@ function App() {
       setErro('Preencha todos os campos');
       return;
     }
-
-    const gastoData = {
-      id: editando,
-      descricao: formData.descricao,
-      data: formData.data,
-      valor: parseFloat(formData.valor)
-    };
-
+  
+    const valor = parseFloat(formData.valor);
+    if (isNaN(valor) || valor <= 0) {
+      setErro('Valor inválido');
+      return;
+    }
+  
     try {
       setCarregando(true);
-      if (editando) {
-        await axios.put(`/api/Gastos/${editando}`, gastoData);
-      } else {
-        await axios.post('/api/Gastos', gastoData);
-      }
+      
+      const gastoData = {
+        descricao: formData.descricao,
+        data: new Date(formData.data).toISOString(),
+        valor: valor
+      };
+  
+      if (editando) gastoData.id = editando;
+  
+      const response = editando
+        ? await axios.put(`/api/Gastos/${editando}`, gastoData)
+        : await axios.post('/api/Gastos', gastoData);
+      
       resetForm();
       await carregarGastos();
     } catch (error) {
